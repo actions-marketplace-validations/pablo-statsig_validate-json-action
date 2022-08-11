@@ -1,6 +1,19 @@
 import * as core from '@actions/core';
 import { getConfig, verifyConfigValues } from './configuration';
 import { validateJsons } from './json-validator';
+import path from 'path';
+import fs from 'fs';
+
+function* walkSync(dir) {
+    const files = fs.readdirSync(dir, { withFileTypes: true });
+    for (const file of files) {
+        if (file.isDirectory()) {
+            yield* walkSync(path.join(dir, file.name));
+        } else {
+            yield path.join(dir, file.name);
+        }
+    }
+}
 
 async function run() {
     try {
@@ -12,7 +25,15 @@ async function run() {
             return;
         }
 
-        const jsonRelativePaths = configuration.JSONS.split(',');
+        let jsonRelativePaths = configuration.JSONS.split(',');
+        if (jsonRelativePaths.length == 1 && jsonRelativePaths[0] == '*') {
+            jsonRelativePaths = []
+            const source_dir = configuration.GITHUB_WORKSPACE;
+            for (var file_path in walkSync(source_dir)) {
+                if (!file_path.endsWith('json')) continue;
+                jsonRelativePaths.push(file_path)
+            }
+        }
 
         const validationResults = await validateJsons(
             configuration.GITHUB_WORKSPACE,
