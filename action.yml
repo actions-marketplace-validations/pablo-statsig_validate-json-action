@@ -1,6 +1,6 @@
-name: 'Validate JSON'
+name: 'Validate JSON recursive'
 description: 'GitHub Action: Validate JSON'
-author: 'Or Rosenblatt'
+author: 'Or Rosenblatt modified by pablito'
 inputs:
   schema:
     description: 'Relative file path under the repository of a JSON schema file to validate the other JSON files with.'
